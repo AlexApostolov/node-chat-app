@@ -1,13 +1,32 @@
 // Use Node.js built-in module "path" to build cleaner paths between "server" & "public" directories
 const path = require('path');
-const publicPath = path.join(__dirname, '../public');
-
+// Instead of letting Express.js behind the scenes use of Node.js "http" module, we'll use it directly
+const http = require('http');
 const express = require('express');
-const app = express();
+const socketIO = require('socket.io');
+
+const publicPath = path.join(__dirname, '../public');
 const port = process.env.PORT || 3000;
+
+const app = express();
+// "createServer" is what Express calls in its "listen" method
+// Instead of req,res callback, pass Express app to "createServer"--Express
+const server = http.createServer(app);
+// Websocket server
+const io = socketIO(server);
 
 app.use(express.static(publicPath));
 
-app.listen(port, () => {
+// Register an event listener, and pass it "connection" to listen for a new connection, i.e. new user
+io.on('connection', socket => {
+  console.log('New user connected');
+
+  socket.on('disconnect', () => {
+    console.log('User was disconnected');
+  });
+});
+
+// Instead of "app.listen" use Node.js "createServer" saved above, so that we can add socketIO support
+server.listen(port, () => {
   console.log(`Server is up on port ${port}`);
 });
