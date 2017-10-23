@@ -23,6 +23,18 @@ app.use(express.static(publicPath));
 io.on('connection', socket => {
   console.log('New user connected');
 
+  socket.emit('newMessage', {
+    from: 'Admin',
+    text: 'Welcome to the chat app',
+    createdAt: new Date().getTime()
+  });
+
+  socket.broadcast.emit('newMessage', {
+    from: 'Admin',
+    text: 'New user joined',
+    createdAt: new Date().getTime()
+  });
+
   // Listen for client's created message
   socket.on('createMessage', message => {
     console.log('createMessage', message);
@@ -34,6 +46,12 @@ io.on('connection', socket => {
       // Create the timestamp on the server to prevent a user from spoofing when a message was created
       createdAt: new Date().getTime()
     });
+    // // Broadcasting to all users except for this socket, i.e. all users except admin
+    // socket.broadcast.emit('newMessage', {
+    //   from: message.from,
+    //   text: message.text,
+    //   createdAt: new Date().getTime()
+    // });
   });
 
   socket.on('disconnect', () => {
