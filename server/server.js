@@ -5,6 +5,7 @@ const http = require('http');
 const express = require('express');
 const socketIO = require('socket.io');
 
+const { generateMessage } = require('./utils/message');
 const publicPath = path.join(__dirname, '../public');
 const port = process.env.PORT || 3000;
 
@@ -23,29 +24,21 @@ app.use(express.static(publicPath));
 io.on('connection', socket => {
   console.log('New user connected');
 
-  socket.emit('newMessage', {
-    from: 'Admin',
-    text: 'Welcome to the chat app',
-    createdAt: new Date().getTime()
-  });
+  socket.emit(
+    'newMessage',
+    generateMessage('Admin', 'Welcome to the chat app')
+  );
 
-  socket.broadcast.emit('newMessage', {
-    from: 'Admin',
-    text: 'New user joined',
-    createdAt: new Date().getTime()
-  });
+  socket.broadcast.emit(
+    'newMessage',
+    generateMessage('Admin', 'New user joined')
+  );
 
   // Listen for client's created message
   socket.on('createMessage', message => {
     console.log('createMessage', message);
     // Emit event to every single connection, unlike "socket.emit" which emits to a single connection
-    io.emit('newMessage', {
-      // Pass the message along
-      from: message.from,
-      text: message.text,
-      // Create the timestamp on the server to prevent a user from spoofing when a message was created
-      createdAt: new Date().getTime()
-    });
+    io.emit('newMessage', generateMessage(message.from, message.text));
     // // Broadcasting to all users except for this socket, i.e. all users except admin
     // socket.broadcast.emit('newMessage', {
     //   from: message.from,
