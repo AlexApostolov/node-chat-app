@@ -35,10 +35,12 @@ io.on('connection', socket => {
   );
 
   // Listen for client's created message
-  socket.on('createMessage', message => {
+  socket.on('createMessage', (message, callback) => {
     console.log('createMessage', message);
     // Emit event to every single connection, unlike "socket.emit" which emits to a single connection
     io.emit('newMessage', generateMessage(message.from, message.text));
+    // Send an acknowledgement
+    callback('This is from the server.');
     // // Broadcasting to all users except for this socket, i.e. all users except admin
     // socket.broadcast.emit('newMessage', {
     //   from: message.from,
