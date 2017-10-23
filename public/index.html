@@ -11,17 +11,6 @@
 
   <!-- Socket.io JavaScript library for the frontend -->
   <script src="/socket.io/socket.io.js"></script>
-  <!-- Initiate a connection request from client to server to open a websocket & keep that connection open -->
-  <script>
-  var socket = io();
-
-socket.on('connect', () => {
-  console.log('Connected to server');
-});
-
-socket.on('disconnect', () => {
-  console.log('Disconnected from server');
-});
-</script>
+  <script src="/js/index.js"></script>
 </body>
 </html>

@@ -17,9 +17,22 @@ const io = socketIO(server);
 
 app.use(express.static(publicPath));
 
-// Register an event listener, and pass it "connection" to listen for a new connection, i.e. new user
+// Register an event listener for server-wide events,
+// and pass it "connection" to listen for a new connection, i.e. new user.
+// Only this "connection" event gets to be attached to "io"
 io.on('connection', socket => {
   console.log('New user connected');
+
+  socket.emit('newMessage', {
+    from: 'John',
+    text: 'See you then',
+    createdAt: 123123
+  });
+
+  // Listen for client's created message
+  socket.on('createMessage', message => {
+    console.log('createMessage', message);
+  });
 
   socket.on('disconnect', () => {
     console.log('User was disconnected');
