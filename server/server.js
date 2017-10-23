@@ -23,15 +23,17 @@ app.use(express.static(publicPath));
 io.on('connection', socket => {
   console.log('New user connected');
 
-  socket.emit('newMessage', {
-    from: 'John',
-    text: 'See you then',
-    createdAt: 123123
-  });
-
   // Listen for client's created message
   socket.on('createMessage', message => {
     console.log('createMessage', message);
+    // Emit event to every single connection, unlike "socket.emit" which emits to a single connection
+    io.emit('newMessage', {
+      // Pass the message along
+      from: message.from,
+      text: message.text,
+      // Create the timestamp on the server to prevent a user from spoofing when a message was created
+      createdAt: new Date().getTime()
+    });
   });
 
   socket.on('disconnect', () => {
