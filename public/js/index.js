@@ -13,27 +13,30 @@ socket.on('disconnect', function() {
 // Data emitted by the server event is the 1st arg in the callback
 socket.on('newMessage', function(message) {
   var formattedTime = moment(message.createdAt).format('h:mm a');
-  // Use jQuery to create an li element for the ol in index.html
-  var li = jQuery('<li></li>');
-  li.text(message.from + ' ' + formattedTime + ': ' + message.text);
+  // Get the inner HTML of the script tag with id of "message-template"
+  var template = jQuery('#message-template').html();
+  // Store the return value as "html", pass Mustache.js the template to render, and an object of data to render
+  var html = Mustache.render(template, {
+    text: message.text,
+    from: message.from,
+    createdAt: formattedTime
+  });
 
-  // Append it
-  jQuery('#messages').append(li);
+  jQuery('#messages').append(html);
 });
 
 // Add event listener for newLocationMessage event
 socket.on('newLocationMessage', function(message) {
   var formattedTime = moment(message.createdAt).format('h:mm a');
-  var li = jQuery('<li></li>');
-  // Link that will open in a new tab to avoid getting kicked out of the chat room
-  var a = jQuery('<a target="_blank">My current location</a>');
+  var template = jQuery('#location-message-template').html();
+  var html = Mustache.render(template, {
+    from: message.from,
+    url: message.url,
+    createdAt: formattedTime
+  });
 
-  li.text(message.from + ' ' + formattedTime + ': ');
-  // Set the href value of the link--one arg for getting and two args for setting
-  // in a way that prevents malicious code injection
-  a.attr('href', message.url);
-  li.append(a);
-  jQuery('#messages').append(li);
+  // Link that will open in a new tab to avoid getting kicked out of the chat room
+  jQuery('#messages').append(html);
 });
 
 // Custom event listener for the message submit form
