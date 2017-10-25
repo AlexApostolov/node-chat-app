@@ -12,10 +12,10 @@ socket.on('disconnect', function() {
 
 // Data emitted by the server event is the 1st arg in the callback
 socket.on('newMessage', function(message) {
-  console.log('newMessage', message);
+  var formattedTime = moment(message.createdAt).format('h:mm a');
   // Use jQuery to create an li element for the ol in index.html
   var li = jQuery('<li></li>');
-  li.text(message.from + ': ' + message.text);
+  li.text(message.from + ' ' + formattedTime + ': ' + message.text);
 
   // Append it
   jQuery('#messages').append(li);
@@ -23,11 +23,12 @@ socket.on('newMessage', function(message) {
 
 // Add event listener for newLocationMessage event
 socket.on('newLocationMessage', function(message) {
+  var formattedTime = moment(message.createdAt).format('h:mm a');
   var li = jQuery('<li></li>');
   // Link that will open in a new tab to avoid getting kicked out of the chat room
   var a = jQuery('<a target="_blank">My current location</a>');
 
-  li.text(message.from + ': ');
+  li.text(message.from + ' ' + formattedTime + ': ');
   // Set the href value of the link--one arg for getting and two args for setting
   // in a way that prevents malicious code injection
   a.attr('href', message.url);
