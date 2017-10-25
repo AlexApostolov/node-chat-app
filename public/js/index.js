@@ -27,7 +27,7 @@ socket.on('newLocationMessage', function(message) {
   // Link that will open in a new tab to avoid getting kicked out of the chat room
   var a = jQuery('<a target="_blank">My current location</a>');
 
-  li.text(`${message.from}: `);
+  li.text(message.from + ': ');
   // Set the href value of the link--one arg for getting and two args for setting
   // in a way that prevents malicious code injection
   a.attr('href', message.url);
@@ -39,15 +39,19 @@ socket.on('newLocationMessage', function(message) {
 jQuery('#message-form').on('submit', function(e) {
   // Prevent default page refresh when submit button is pushed
   e.preventDefault();
+
+  var messageTextbox = jQuery('[name=message]');
+
   socket.emit(
     'createMessage',
     {
       from: 'User',
       // Get value from input field with name attribute equal to "message"
-      text: jQuery('[name=message]').val()
+      text: messageTextbox.val()
     },
     function() {
-      // Callback for acknowledgement
+      // Callback for acknowledgement to clear the field after sending
+      messageTextbox.val('');
     }
   );
 });
@@ -61,9 +65,15 @@ locationButton.on('click', function() {
     return alert('Geolocation supported by your browser.');
   }
 
+  // If geolocation button is clicked, disable button until location is sent to account for delay
+  // and update its text with the status
+  locationButton.attr('disabled', 'disabled').text('Sending location...');
+
   // Tell browser to actively get coordinates of the browser
   navigator.geolocation.getCurrentPosition(
     function(position) {
+      // Re-enable geolocation button after sending location
+      locationButton.removeAttr('disabled').text('Send location');
       socket.emit('createLocationMessage', {
         latitude: position.coords.latitude,
         longitude: position.coords.longitude
@@ -71,6 +81,7 @@ locationButton.on('click', function() {
     },
     function() {
       // If user does something like click deny
+      locationButton.removeAttr('disabled').text('Send location');
       alert('Unable to fetch location.');
     }
   );
