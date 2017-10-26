@@ -1,6 +1,30 @@
 // Client-side
 var socket = io();
 
+// Call scrollToBottom every time a new message is added to the chat area: newMessage & newLocationMessage
+function scrollToBottom() {
+  // Selectors
+  var messages = jQuery('#messages');
+  // Select the very last list item inside "messages"
+  var newMessage = messages.children('li:last-child');
+  // Heights
+  // Only the height of element that is visible including padding
+  var clientHeight = messages.prop('clientHeight');
+  var scrollTop = messages.prop('scrollTop');
+  // The entire height of an element including padding
+  var scrollHeight = messages.prop('scrollHeight');
+  // Take into account the height of a new message including its padding from stylesheet
+  var newMessageHeight = newMessage.innerHeight();
+  // Height of the second to last list item
+  var lastMessageHeight = newMessage.prev().innerHeight();
+
+  // If user is close to the bottom, scroll user when new message arrives
+  if (clientHeight + scrollTop + newMessageHeight + lastMessageHeight >= scrollHeight) {
+    // Use jQuery method to set the scroll top value to the total height of the container, in order to move to bottom
+    messages.scrollTop(scrollHeight)
+  }
+}
+
 // Initiate a connection request from client to server to open a websocket & keep that connection open
 socket.on('connect', function() {
   console.log('Connected to server');
@@ -23,6 +47,7 @@ socket.on('newMessage', function(message) {
   });
 
   jQuery('#messages').append(html);
+  scrollToBottom();
 });
 
 // Add event listener for newLocationMessage event
@@ -37,6 +62,7 @@ socket.on('newLocationMessage', function(message) {
 
   // Link that will open in a new tab to avoid getting kicked out of the chat room
   jQuery('#messages').append(html);
+  scrollToBottom();
 });
 
 // Custom event listener for the message submit form
