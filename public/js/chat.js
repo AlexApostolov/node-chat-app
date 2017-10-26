@@ -10,6 +10,7 @@ function scrollToBottom() {
   // Heights
   // Only the height of element that is visible including padding
   var clientHeight = messages.prop('clientHeight');
+  // Return the number of pixels an element's content is scrolled vertically
   var scrollTop = messages.prop('scrollTop');
   // The entire height of an element including padding
   var scrollHeight = messages.prop('scrollHeight');
