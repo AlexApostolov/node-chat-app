@@ -20,15 +20,45 @@ function scrollToBottom() {
   var lastMessageHeight = newMessage.prev().innerHeight();
 
   // If user is close to the bottom, scroll user when new message arrives
-  if (clientHeight + scrollTop + newMessageHeight + lastMessageHeight >= scrollHeight) {
+  if (
+    clientHeight + scrollTop + newMessageHeight + lastMessageHeight >=
+    scrollHeight
+  ) {
     // Use jQuery method to set the scroll top value to the total height of the container, in order to move to bottom
-    messages.scrollTop(scrollHeight)
+    messages.scrollTop(scrollHeight);
   }
 }
 
 // Initiate a connection request from client to server to open a websocket & keep that connection open
 socket.on('connect', function() {
-  console.log('Connected to server');
+  // Emit an event to start the process of joining a room
+  // socket.io has built in support for isolated rooms
+  var params = jQuery.deparam(window.location.search);
+  // Emit custom event "join" that will be listened to by the server and will recieve the data as a "params" object
+  // 3rd arg is if required data is invalid, whick kicks user back to the join form
+  socket.emit('join', params, function(err) {
+    if (err) {
+      // Can use a modal library of your choice here, user gets popup and clicks the OK button to be redirected
+      alert(err);
+      // Manipulate which page the user is on to redirect user to the root page
+      window.location.href = '/';
+    } else {
+      console.log('No error');
+    }
+  });
+});
+
+// Take an array of users--like what's returned by "getUser"--and update the list of users on sidebar
+socket.on('updateUserList', function(users) {
+  var ol = jQuery('<ol></ol>');
+
+  // Append the user's name--safely--to the ordered list of users
+  users.forEach(function(user) {
+    ol.append(jQuery('<li></li>').text(user));
+  });
+
+  // Select the area in the DOM & render the updated user list by completely overwriting the old
+  jQuery('#users').html(ol);
 });
 
 socket.on('disconnect', function() {
