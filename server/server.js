@@ -68,18 +68,34 @@ io.on('connection', socket => {
 
   // Listen for client's created message
   socket.on('createMessage', (message, callback) => {
-    console.log('createMessage', message);
-    // Emit event to every single connection, unlike "socket.emit" which emits to a single connection
-    io.emit('newMessage', generateMessage(message.from, message.text));
+    const user = users.getUser(socket.id);
+
+    // Check first if user exists, and a real string, before doing anything
+    if (user && isRealString(message.text)) {
+      // Emit event to every single connection--in the room only,
+      // unlike "socket.emit" which emits to a single connection
+      io
+        .to(user.room)
+        .emit('newMessage', generateMessage(user.name, message.text));
+    }
+
     // Send an acknowledgement
     callback();
   });
 
   socket.on('createLocationMessage', coords => {
-    io.emit(
-      'newLocationMessage',
-      generateLocationMessage('Admin', coords.latitude, coords.longitude)
-    );
+    // Fetch the user to send only the the user's room
+    const user = users.getUser(socket.id);
+
+    // Check if user exists, before emitting a location message
+    if (user) {
+      io
+        .to(user.room)
+        .emit(
+          'newLocationMessage',
+          generateLocationMessage(user.name, coords.latitude, coords.longitude)
+        );
+    }
   });
 
   socket.on('disconnect', () => {
